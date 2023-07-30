@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const connectDB = require("./config/mongoConfig");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/errorHandler");
+const verifyJwt = require("./middleware/checkAuth");
 
 // Routes
 const authRouter = require("./routes/authRoute");
@@ -30,6 +31,11 @@ app.get("/", (req, res) => {
 
 // route to auth
 app.use("/auth", authRouter);
+
+// check auth
+app.use("/auth/check", verifyJwt, (req, res) => {
+  res.json({ message: "Verified user's route" });
+});
 
 // Invalid route
 app.use("*", (req, res) => {

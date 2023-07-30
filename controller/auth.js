@@ -1,6 +1,8 @@
 const jsonwebtoken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../model/User");
+const ACCESS_KEY = process.env.ACCESS_KEY ?? "secret";
+const REFRESH_KEY = process.env.REFRESH_KEY ?? "secret";
 
 class Auth {
   async register(req, res) {
@@ -28,10 +30,10 @@ class Auth {
       if (foundUser) {
         const matchPass = await bcrypt.compare(psw, foundUser.psw);
         if (matchPass) {
-          const accessToken = await jsonwebtoken.sign({ user, email }, "secret", {
+          const accessToken = await jsonwebtoken.sign({ user, email }, ACCESS_KEY, {
             expiresIn: "1min",
           });
-          const refreshToken = await jsonwebtoken.sign({ user, email }, "secret", {
+          const refreshToken = await jsonwebtoken.sign({ user, email }, REFRESH_KEY, {
             expiresIn: "5min",
           });
           await User.findOneAndUpdate({ user: user }, { refreshToken: refreshToken });
@@ -49,7 +51,7 @@ class Auth {
           });
           return res.status(201).json({ message: `Successfully logged in. Hi ${foundUser.user}` });
         } else {
-          return res.status(400).json({ message: "Invalid credentials" });
+          return res.status(401).json({ message: "Invalid credentials" });
         }
       } else {
         return res.status(400).json({ message: "User not found!" });
